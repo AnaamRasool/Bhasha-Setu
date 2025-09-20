@@ -13,9 +13,12 @@ interface FlashcardProps {
 export function Flashcard({ englishPhrase, translatedPhrase, languageCode }: FlashcardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  
+  // We need to store the function in a state to avoid it being undefined on the server
+  const [speak, setSpeak] = useState<(e: React.MouseEvent) => void>(() => () => {});
+
 
   useEffect(() => {
-    // Add some CSS for the 3D effect
     const styles = `
     .perspective-1000 { perspective: 1000px; }
     .transform-style-3d { transform-style: preserve-3d; }
@@ -27,23 +30,29 @@ export function Flashcard({ englishPhrase, translatedPhrase, languageCode }: Fla
     styleSheet.type = "text/css";
     styleSheet.innerText = styles;
     document.head.appendChild(styleSheet);
+    
+    // Define the speak function here, so it's only created on the client
+    setSpeak(() => (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (typeof window === 'undefined' || !window.speechSynthesis) return;
+      setIsSpeaking(true);
+      const utterance = new SpeechSynthesisUtterance(translatedPhrase);
+      utterance.lang = languageCode;
+      utterance.onend = () => setIsSpeaking(false);
+      window.speechSynthesis.speak(utterance);
+    });
 
     return () => {
       if (document.head.contains(styleSheet)) {
         document.head.removeChild(styleSheet);
       }
+      // Cleanup speechSynthesis
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
     };
-  }, []);
+  }, [translatedPhrase, languageCode]);
 
-  const handleSpeak = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (typeof window === 'undefined' || !window.speechSynthesis) return;
-    setIsSpeaking(true);
-    const utterance = new SpeechSynthesisUtterance(translatedPhrase);
-    utterance.lang = languageCode; 
-    utterance.onend = () => setIsSpeaking(false);
-    window.speechSynthesis.speak(utterance);
-  };
   
   return (
     <div className="w-full h-64 perspective-1000">
@@ -67,7 +76,7 @@ export function Flashcard({ englishPhrase, translatedPhrase, languageCode }: Fla
               variant="outline"
               size="icon"
               className="mt-4"
-              onClick={handleSpeak}
+              onClick={speak}
               disabled={isSpeaking}
             >
               <Volume2 className={`h-5 w-5 ${isSpeaking ? 'animate-pulse' : ''}`} />
