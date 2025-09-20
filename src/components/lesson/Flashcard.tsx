@@ -5,11 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Volume2 } from 'lucide-react';
 
 interface FlashcardProps {
-  phrase: string;
+  englishPhrase: string;
+  translatedPhrase: string;
   languageCode: string;
 }
 
-export function Flashcard({ phrase, languageCode }: FlashcardProps) {
+export function Flashcard({ englishPhrase, translatedPhrase, languageCode }: FlashcardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
 
@@ -38,15 +39,12 @@ export function Flashcard({ phrase, languageCode }: FlashcardProps) {
     e.stopPropagation();
     if (typeof window === 'undefined' || !window.speechSynthesis) return;
     setIsSpeaking(true);
-    const utterance = new SpeechSynthesisUtterance(phrase);
+    const utterance = new SpeechSynthesisUtterance(translatedPhrase);
     utterance.lang = languageCode; 
     utterance.onend = () => setIsSpeaking(false);
     window.speechSynthesis.speak(utterance);
   };
   
-  // This is a placeholder for translation
-  const translatedPhrase = `[${phrase} in target language]`;
-
   return (
     <div className="w-full h-64 perspective-1000">
       <div
@@ -56,7 +54,7 @@ export function Flashcard({ phrase, languageCode }: FlashcardProps) {
         {/* Front of card */}
         <Card className="absolute w-full h-full backface-hidden flex items-center justify-center">
           <CardContent className="p-6">
-            <p className="text-2xl font-semibold">{phrase}</p>
+            <p className="text-2xl font-semibold">{englishPhrase}</p>
             <p className="text-sm text-muted-foreground mt-4">(Click to see translation)</p>
           </CardContent>
         </Card>

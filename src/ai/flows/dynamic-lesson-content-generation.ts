@@ -17,8 +17,13 @@ const GenerateLessonContentInputSchema = z.object({
 });
 export type GenerateLessonContentInput = z.infer<typeof GenerateLessonContentInputSchema>;
 
+const PhrasePairSchema = z.object({
+  english: z.string().describe('The phrase in English.'),
+  translated: z.string().describe('The phrase translated into the target language.'),
+});
+
 const GenerateLessonContentOutputSchema = z.object({
-  translations: z.array(z.string()).describe('An array of translated phrases for the lesson topic.'),
+  phrases: z.array(PhrasePairSchema).describe('An array of English phrases and their translations.'),
   examples: z.array(z.string()).describe('An array of example sentences using the translated phrases.'),
   romanizedExamples: z.array(z.string()).describe('An array of romanized (e.g., Hinglish) versions of the example sentences for pronunciation guidance.'),
 });
@@ -37,21 +42,25 @@ const prompt = ai.definePrompt({
 Language: {{{language}}}
 Topic: {{{lessonTopic}}}
 
-Provide 5 translated phrases related to the topic, and 3 example sentences for each phrase. For each example sentence, also provide a romanized version for pronunciation (e.g., for Hindi, provide Hinglish).
+Provide 5 phrases related to the topic, each with its English version and the translated version in the target language.
+Then, provide 3 example sentences in the target language for each translated phrase. For each example sentence, also provide a romanized version for pronunciation (e.g., for Hindi, provide Hinglish).
 
-Output the results as a JSON object with "translations", "examples", and "romanizedExamples" fields. The translations field should be an array of strings, the examples field should be an array of strings, and the romanizedExamples should be an array of strings.
+Output the results as a JSON object with "phrases", "examples", and "romanizedExamples" fields. 
+The "phrases" field should be an array of objects, each with "english" and "translated" properties.
+The "examples" field should be an array of strings.
+The "romanizedExamples" field should be an array of strings.
 
 Make the translations natural and useful for everyday conversations, avoiding overly formal or textbook-like language.
 
 Here's an example of the desired output format for Hindi:
 
 {
-  "translations": [
-    "Hello",
-    "Goodbye",
-    "Thank you",
-    "You're welcome",
-    "Please"
+  "phrases": [
+    { "english": "Hello", "translated": "नमस्ते" },
+    { "english": "Goodbye", "translated": "अलविदा" },
+    { "english": "Thank you", "translated": "धन्यवाद" },
+    { "english": "You're welcome", "translated": "आपका स्वागत है" },
+    { "english": "Please", "translated": "कृपया" }
   ],
   "examples": [
     "नमस्ते, आप कैसे हैं?",

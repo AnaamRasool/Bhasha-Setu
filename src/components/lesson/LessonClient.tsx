@@ -56,9 +56,13 @@ export function LessonClient({ language, chapter }: LessonClientProps) {
           ) : (
             <Carousel className="w-full">
               <CarouselContent>
-                {lessonContent?.translations.map((phrase: string, index: number) => (
+                {lessonContent?.phrases.map((phrase: { english: string; translated: string }, index: number) => (
                   <CarouselItem key={index}>
-                    <Flashcard phrase={phrase} languageCode={language.code} />
+                    <Flashcard 
+                      englishPhrase={phrase.english} 
+                      translatedPhrase={phrase.translated} 
+                      languageCode={language.code} 
+                    />
                   </CarouselItem>
                 ))}
               </CarouselContent>
