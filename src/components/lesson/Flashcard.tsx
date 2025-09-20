@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Volume2, RefreshCw } from 'lucide-react';
@@ -11,6 +11,25 @@ interface FlashcardProps {
 export function Flashcard({ phrase }: FlashcardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+
+  useEffect(() => {
+    // Add some CSS for the 3D effect
+    const styles = `
+    .perspective-1000 { perspective: 1000px; }
+    .transform-style-3d { transform-style: preserve-3d; }
+    .rotate-y-180 { transform: rotateY(180deg); }
+    .backface-hidden { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+    `;
+
+    const styleSheet = document.createElement("style");
+    styleSheet.type = "text/css";
+    styleSheet.innerText = styles;
+    document.head.appendChild(styleSheet);
+
+    return () => {
+      document.head.removeChild(styleSheet);
+    };
+  }, []);
 
   const handleSpeak = () => {
     if (typeof window === 'undefined' || !window.speechSynthesis) return;
@@ -60,19 +79,4 @@ export function Flashcard({ phrase }: FlashcardProps) {
       </div>
     </div>
   );
-}
-
-// Add some CSS for the 3D effect
-const styles = `
-.perspective-1000 { perspective: 1000px; }
-.transform-style-3d { transform-style: preserve-3d; }
-.rotate-y-180 { transform: rotateY(180deg); }
-.backface-hidden { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
-`;
-
-if (typeof document !== 'undefined') {
-  const styleSheet = document.createElement("style");
-  styleSheet.type = "text/css";
-  styleSheet.innerText = styles;
-  document.head.appendChild(styleSheet);
 }
