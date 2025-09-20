@@ -76,8 +76,7 @@ export function LessonClient({ language, chapter }: LessonClientProps) {
             <Skeleton className="w-full h-64" />
           ) : (
             <PronunciationPractice 
-              sentences={lessonContent?.examples || []} 
-              romanizedSentences={lessonContent?.romanizedExamples || []}
+              examples={lessonContent?.examples || []} 
             />
           )}
         </TabsContent>

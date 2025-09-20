@@ -8,19 +8,28 @@ import { Button } from '@/components/ui/button';
 import { Mic, MicOff, Send, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 
-interface PronunciationPracticeProps {
-  sentences: string[];
-  romanizedSentences: string[];
+interface Example {
+  english: string;
+  translated: string;
+  romanized: string;
 }
 
-export function PronunciationPractice({ sentences, romanizedSentences }: PronunciationPracticeProps) {
+interface PronunciationPracticeProps {
+  examples: Example[];
+}
+
+export function PronunciationPractice({ examples }: PronunciationPracticeProps) {
   const [currentSentenceIndex, setCurrentSentenceIndex] = useState(0);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { isRecording, startRecording, stopRecording, audioBlob } = useAudioRecorder();
 
-  const currentSentence = sentences[currentSentenceIndex];
-  const currentRomanizedSentence = romanizedSentences[currentSentenceIndex];
+  if (!examples || examples.length === 0) {
+    return <Card><CardContent><p>No practice sentences available.</p></CardContent></Card>;
+  }
+
+  const currentExample = examples[currentSentenceIndex];
+  const { english, translated, romanized } = currentExample;
 
   const handleGetFeedback = async () => {
     if (!audioBlob) return;
@@ -34,7 +43,7 @@ export function PronunciationPractice({ sentences, romanizedSentences }: Pronunc
         const base64data = reader.result as string;
         const result = await getPronunciationFeedback({
           speechDataUri: base64data,
-          targetText: currentSentence,
+          targetText: translated,
         });
         setFeedback(result.feedback);
       };
@@ -48,19 +57,22 @@ export function PronunciationPractice({ sentences, romanizedSentences }: Pronunc
 
   const handleNext = () => {
     setFeedback(null);
-    setCurrentSentenceIndex((prev) => (prev + 1) % sentences.length);
+    setCurrentSentenceIndex((prev) => (prev + 1) % examples.length);
   };
 
   return (
     <Card>
       <CardContent className="pt-6">
         <p className="text-center text-lg font-semibold mb-4">Practice saying this sentence:</p>
-        <div className="p-4 bg-muted rounded-lg text-center">
-          <p className="text-2xl text-primary">
-            {currentSentence}
+        <div className="p-4 bg-muted rounded-lg text-center space-y-2">
+           <p className="text-md text-muted-foreground">
+            {english}
           </p>
-          <p className="text-lg text-muted-foreground mt-2">
-            ({currentRomanizedSentence})
+          <p className="text-2xl text-primary font-semibold">
+            {translated}
+          </p>
+          <p className="text-lg text-muted-foreground">
+            ({romanized})
           </p>
         </div>
         {feedback && (
