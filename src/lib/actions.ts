@@ -1,8 +1,7 @@
 "use server";
 
-import { generateLessonContent, speechToTextPronunciationFeedback } from "@/ai/flows";
-import type { GenerateLessonContentInput, GenerateLessonContentOutput } from "@/ai/flows/dynamic-lesson-content-generation";
-import type { SpeechToTextPronunciationFeedbackInput, SpeechToTextPronunciationFeedbackOutput } from "@/ai/flows/speech-to-text-pronunciation-feedback";
+import { generateLessonContent, type GenerateLessonContentInput, type GenerateLessonContentOutput } from "@/ai/flows/dynamic-lesson-content-generation";
+import { speechToTextPronunciationFeedback, type SpeechToTextPronunciationFeedbackInput, type SpeechToTextPronunciationFeedbackOutput } from "@/ai/flows/speech-to-text-pronunciation-feedback";
 import { db } from "./firebase";
 import { collection, doc, getDoc, setDoc, updateDoc, arrayUnion, increment } from "firebase/firestore";
 
