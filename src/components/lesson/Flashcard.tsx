@@ -2,13 +2,14 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Volume2, RefreshCw } from 'lucide-react';
+import { Volume2 } from 'lucide-react';
 
 interface FlashcardProps {
   phrase: string;
+  languageCode: string;
 }
 
-export function Flashcard({ phrase }: FlashcardProps) {
+export function Flashcard({ phrase, languageCode }: FlashcardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
 
@@ -27,16 +28,18 @@ export function Flashcard({ phrase }: FlashcardProps) {
     document.head.appendChild(styleSheet);
 
     return () => {
-      document.head.removeChild(styleSheet);
+      if (document.head.contains(styleSheet)) {
+        document.head.removeChild(styleSheet);
+      }
     };
   }, []);
 
-  const handleSpeak = () => {
+  const handleSpeak = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (typeof window === 'undefined' || !window.speechSynthesis) return;
     setIsSpeaking(true);
     const utterance = new SpeechSynthesisUtterance(phrase);
-    // Find a voice for the target language if possible
-    // utterance.lang = language.code; 
+    utterance.lang = languageCode; 
     utterance.onend = () => setIsSpeaking(false);
     window.speechSynthesis.speak(utterance);
   };
@@ -66,10 +69,7 @@ export function Flashcard({ phrase }: FlashcardProps) {
               variant="outline"
               size="icon"
               className="mt-4"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleSpeak();
-              }}
+              onClick={handleSpeak}
               disabled={isSpeaking}
             >
               <Volume2 className={`h-5 w-5 ${isSpeaking ? 'animate-pulse' : ''}`} />

@@ -13,5 +13,8 @@ export default function LessonPage({ params }: { params: { lang: string; chapter
     notFound();
   }
 
-  return <LessonClient language={language} chapter={chapter} />;
+  // Pass only plain objects to Client Components
+  const languagePlain = { name: language.name, code: language.code };
+
+  return <LessonClient language={languagePlain} chapter={chapter} />;
 }

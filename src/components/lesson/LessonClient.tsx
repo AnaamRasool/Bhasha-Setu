@@ -1,17 +1,16 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { getLessonContent } from '@/lib/actions';
-import type { Language } from '@/lib/languages';
-import type { Chapter } from '@/lib/lessons';
+import { Chapter } from '@/lib/lessons';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Flashcard } from './Flashcard';
 import { PronunciationPractice } from './PronunciationPractice';
 import { Skeleton } from '../ui/skeleton';
-import { Book, Mic, BrainCircuit } from 'lucide-react';
+import { Book, Mic } from 'lucide-react';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '../ui/carousel';
 
 interface LessonClientProps {
-  language: Language;
+  language: { name: string; code: string };
   chapter: Chapter;
 }
 
@@ -59,7 +58,7 @@ export function LessonClient({ language, chapter }: LessonClientProps) {
               <CarouselContent>
                 {lessonContent?.translations.map((phrase: string, index: number) => (
                   <CarouselItem key={index}>
-                    <Flashcard phrase={phrase} />
+                    <Flashcard phrase={phrase} languageCode={language.code} />
                   </CarouselItem>
                 ))}
               </CarouselContent>
