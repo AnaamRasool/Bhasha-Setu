@@ -24,22 +24,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
           createdAt: serverTimestamp(),
           lastActivity: serverTimestamp(),
         }, { merge: true });
+        setLoading(false);
       } else {
-        // No user, sign in anonymously
-        try {
-          const { user: anonUser } = await signInAnonymously(auth);
-           const userRef = doc(db, 'users', anonUser.uid);
-           await setDoc(userRef, { 
-            uid: anonUser.uid,
-            createdAt: serverTimestamp(),
-            lastActivity: serverTimestamp(),
-           }, { merge: true });
-          setUser(anonUser);
-        } catch (error) {
-          console.error("Anonymous sign-in failed:", error);
-        }
+        // Anonymous sign-in is not enabled in your Firebase project.
+        // To fix this, go to the Firebase console -> Authentication -> Sign-in method and enable Anonymous.
+        // For now, we will just set the user to null and stop loading.
+        setUser(null);
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => unsubscribe();
