@@ -13,55 +13,45 @@ interface FlashcardProps {
 export function Flashcard({ englishPhrase, translatedPhrase, languageCode }: FlashcardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  
-  // We need to store the function in a state to avoid it being undefined on the server
   const [speak, setSpeak] = useState<(e: React.MouseEvent) => void>(() => () => {});
 
-
   useEffect(() => {
-    const styles = `
-    .perspective-1000 { perspective: 1000px; }
-    .transform-style-3d { transform-style: preserve-3d; }
-    .rotate-y-180 { transform: rotateY(180deg); }
-    .backface-hidden { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
-    `;
-
-    const styleSheet = document.createElement("style");
-    styleSheet.type = "text/css";
-    styleSheet.innerText = styles;
-    document.head.appendChild(styleSheet);
-    
-    // Define the speak function here, so it's only created on the client
+    // This function will only be defined on the client, after hydration
     setSpeak(() => (e: React.MouseEvent) => {
       e.stopPropagation();
       if (typeof window === 'undefined' || !window.speechSynthesis) return;
+
+      if (isSpeaking) {
+        window.speechSynthesis.cancel();
+        setIsSpeaking(false);
+        return;
+      }
+      
       setIsSpeaking(true);
       const utterance = new SpeechSynthesisUtterance(translatedPhrase);
       utterance.lang = languageCode;
       utterance.onend = () => setIsSpeaking(false);
+      utterance.onerror = () => setIsSpeaking(false); // Handle potential errors
       window.speechSynthesis.speak(utterance);
     });
 
     return () => {
-      if (document.head.contains(styleSheet)) {
-        document.head.removeChild(styleSheet);
-      }
-      // Cleanup speechSynthesis
-      if (window.speechSynthesis) {
+      // Cleanup speechSynthesis when the component unmounts
+      if (typeof window !== 'undefined' && window.speechSynthesis) {
         window.speechSynthesis.cancel();
       }
     };
-  }, [translatedPhrase, languageCode]);
-
+  }, [translatedPhrase, languageCode, isSpeaking]);
   
   return (
-    <div className="w-full h-64 perspective-1000">
+    <div className="w-full h-64" style={{perspective: '1000px'}}>
       <div
-        className={`relative w-full h-full text-center transition-transform duration-700 transform-style-3d ${isFlipped ? 'rotate-y-180' : ''}`}
+        className={`relative w-full h-full text-center transition-transform duration-700`}
+        style={{transformStyle: 'preserve-3d', transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)'}}
         onClick={() => setIsFlipped(!isFlipped)}
       >
         {/* Front of card */}
-        <Card className="absolute w-full h-full backface-hidden flex items-center justify-center">
+        <Card className="absolute w-full h-full flex items-center justify-center" style={{backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden'}}>
           <CardContent className="p-6">
             <p className="text-2xl font-semibold">{englishPhrase}</p>
             <p className="text-sm text-muted-foreground mt-4">(Click to see translation)</p>
@@ -69,7 +59,7 @@ export function Flashcard({ englishPhrase, translatedPhrase, languageCode }: Fla
         </Card>
 
         {/* Back of card */}
-        <Card className="absolute w-full h-full backface-hidden rotate-y-180 flex flex-col items-center justify-center">
+        <Card className="absolute w-full h-full flex flex-col items-center justify-center" style={{backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transform: 'rotateY(180deg)'}}>
           <CardContent className="p-6">
             <p className="text-2xl font-semibold text-primary">{translatedPhrase}</p>
             <Button
@@ -77,7 +67,7 @@ export function Flashcard({ englishPhrase, translatedPhrase, languageCode }: Fla
               size="icon"
               className="mt-4"
               onClick={speak}
-              disabled={isSpeaking}
+              disabled={typeof window === 'undefined' || !window.speechSynthesis}
             >
               <Volume2 className={`h-5 w-5 ${isSpeaking ? 'animate-pulse' : ''}`} />
             </Button>
